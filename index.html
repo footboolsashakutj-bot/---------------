@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Общий счёт</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#eef3f4;--surface:#fff;--ink:#12343b;--muted:#5d767b;--line:#d5e0e2;--accent:#0f7c8a;--accent-ink:#fff;--coin:#f2b705;--neg:#b4412f;--pos:#13805a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1d21;--surface:#16292e;--ink:#e6f1f2;--muted:#8fa9ae;--line:#264249;--accent:#3fb6c4;--accent-ink:#082126;--neg:#ff8a73;--pos:#59d6a1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1d21;--surface:#16292e;--ink:#e6f1f2;--muted:#8fa9ae;--line:#264249;--accent:#3fb6c4;--accent-ink:#082126;--neg:#ff8a73;--pos:#59d6a1;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Onest,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.1;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+h1 input{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;border-bottom:2px dashed var(--line);width:100%;padding:0 0 4px}
+h1 input:focus{outline:none;border-color:var(--accent)}
+.sub{color:var(--muted);margin:0 0 24px}
+h2{font-size:18px;margin:32px 0 12px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;color:inherit}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grow{flex:1 1 140px}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:none;color:var(--muted);font-weight:500;padding:6px 10px;border:1px solid var(--line)}
+button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-height:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 12px}
+.who{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
+.who label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.exp{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.exp:last-child{border:0}
+.exp small{display:block;color:var(--muted)}
+.amt{font-weight:700;white-space:nowrap}
+.bal{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.bal:last-child{border:0}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.receipt{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--coin);border-radius:4px 4px 14px 14px;padding:8px 16px}
+.pay{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.pay:last-child{border:0}
+.pay b{font-weight:700}.pay .sum{margin-left:auto;font-weight:800;font-size:18px;white-space:nowrap}
+.empty{color:var(--muted);padding:8px 0}
+.foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.err{color:var(--neg);min-height:1.4em;margin:8px 0 0;font-size:14px}
+@media (prefers-reduced-motion:no-preference){button{transition:filter .15s}button:hover{filter:brightness(1.1)}}
+</style>
+</head>
+<body>
+<main>
+<div id="start" class="card" hidden>
+<h1 style="font-size:28px">Общий счёт</h1>
+<p class="sub">Создайте группу и отправьте ссылку друзьям: все видят и добавляют траты в одном месте.</p>
+<button id="create">Создать группу</button>
+<p class="err" id="setup" hidden>Сначала подключите Supabase: вставьте адрес проекта и ключ в начале скрипта (см. инструкцию).</p>
+</div>
+<div id="app" hidden>
+<h1><input id="title" type="text" maxlength="60" aria-label="Название группы" placeholder="Название поездки или группы"></h1>
+<p class="sub">Записывайте, кто за что заплатил. Приложение покажет, кто кому и сколько должен перевести.</p>
+
+<p class="err" id="net" role="status"></p>
+<h2>Участники</h2>
+<div class="card">
+  <div class="row">
+    <input id="pname" class="grow" type="text" maxlength="30" placeholder="Имя участника" aria-label="Имя участника">
+    <button id="padd">Добавить</button>
+  </div>
+  <div class="chips" id="people"></div>
+</div>
+
+<h2>Новая трата</h2>
+<div class="card">
+  <div class="row">
+    <input id="desc" class="grow" type="text" maxlength="60" placeholder="За что (например, ужин)" aria-label="Описание траты">
+    <input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Сумма" aria-label="Сумма" style="width:110px">
+    <select id="cur" aria-label="Валюта"><option>€</option><option>$</option><option>₽</option><option>£</option><option>₴</option><option>₸</option></select>
+  </div>
+  <div class="row" style="margin-top:8px;align-items:center">
+    <label for="payer">Платил(а):</label>
+    <select id="payer" class="grow"></select>
+  </div>
+  <p style="margin:12px 0 0">Делим поровну между:</p>
+  <div class="who" id="split"></div>
+  <button id="eadd">Добавить трату</button>
+  <p class="err" id="err" role="alert"></p>
+</div>
+
+<h2>Траты</h2>
+<div class="card" id="exps"></div>
+
+<h2>Баланс</h2>
+<div class="card" id="bals"></div>
+
+<h2>Как рассчитаться</h2>
+<div class="receipt" id="pays"></div>
+
+<div class="foot">
+  <button id="share">Ссылка для друзей</button>
+  <button id="copy" class="ghost">Скопировать итог</button>
+  <button id="leave" class="ghost">Выйти из группы</button>
+</div>
+<p class="sub" style="margin-top:16px;font-size:14px">Любой, у кого есть ссылка, может смотреть и добавлять траты. Не публикуйте её открыто.</p>
+</div>
+</main>
+<script>
+(function(){
+// === Вставьте сюда данные своего проекта Supabase (Project Settings -> API) ===
+var URL_="https://pkwijjnxdrsliqctvzuh.supabase.co/rest/v1/", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrd2lqam54ZHJzbGlxY3R2enVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMTQ1NTAsImV4cCI6MjExMDU5MDU1MH0.SZwspOMeJk-p939Ve4ZeU2Yli8NptohElyE9cgIOlug";
+// ==============================================================================
+var S={title:"",cur:"€",people:[],exp:[]},gid=null,timer=null,t0=null,LS="obschiy-schet-last";
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function rpc(fn,args){return fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(args||{})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()})}
+function net(m){$("net").textContent=m||""}
+function act(fn,args){return rpc(fn,args).then(load).catch(function(){net("Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.")})}
+function money(c){return (Math.abs(c)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" "+S.cur}
+function name(id){var p=S.people.filter(function(x){return x.id===id})[0];return p?p.name:"—"}
+function calc(){
+  var b={};S.people.forEach(function(p){b[p.id]=0});
+  S.exp.forEach(function(e){
+    var ids=e.split.filter(function(i){return i in b});
+    if(!ids.length||!(e.payer in b))return;
+    var base=Math.floor(e.amt/ids.length),rem=e.amt-base*ids.length;
+    b[e.payer]+=e.amt;ids.forEach(function(i,k){b[i]-=base+(k<rem?1:0)});
+  });
+  var cr=[],db=[],tr=[];
+  Object.keys(b).forEach(function(i){if(b[i]>0)cr.push([i,b[i]]);else if(b[i]<0)db.push([i,-b[i]])});
+  while(cr.length&&db.length){
+    cr.sort(function(a,c){return c[1]-a[1]});db.sort(function(a,c){return c[1]-a[1]});
+    var m=Math.min(cr[0][1],db[0][1]);tr.push({from:db[0][0],to:cr[0][0],sum:m});
+    cr[0][1]-=m;db[0][1]-=m;if(!cr[0][1])cr.shift();if(!db[0][1])db.shift();
+  }
+  return{bal:b,tr:tr};
+}
+function render(){
+  if(document.activeElement!==$("title"))$("title").value=S.title;
+  $("cur").value=S.cur;
+  $("people").innerHTML=S.people.length?S.people.map(function(p){return '<span class="chip">'+esc(p.name)+'<button class="x" data-del-p="'+p.id+'" aria-label="Удалить '+esc(p.name)+'">×</button></span>'}).join(""):'<span class="empty">Добавьте хотя бы двух участников.</span>';
+  var keep=$("payer").value;
+  $("payer").innerHTML=S.people.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>'}).join("");
+  if(keep)$("payer").value=keep;
+  var ck={};Array.prototype.forEach.call(document.querySelectorAll("#split input"),function(i){ck[i.value]=i.checked});
+  $("split").innerHTML=S.people.map(function(p){return '<label><input type="checkbox" value="'+p.id+'"'+((p.id in ck)?(ck[p.id]?" checked":""):" checked")+'>'+esc(p.name)+'</label>'}).join("");
+  $("exps").innerHTML=S.exp.length?S.exp.slice().reverse().map(function(e){return '<div class="exp"><div>'+esc(e.desc)+'<small>платил(а) '+esc(name(e.payer))+', делим на '+e.split.length+'</small></div><div class="amt">'+money(e.amt)+' <button class="x" data-del-e="'+e.id+'" aria-label="Удалить трату">×</button></div></div>'}).join(""):'<div class="empty">Пока ни одной траты.</div>';
+  var r=calc();
+  $("bals").innerHTML=S.people.length?S.people.map(function(p){var v=r.bal[p.id]||0;return '<div class="bal"><span>'+esc(p.name)+'</span><span class="'+(v>0?"pos":v<0?"neg":"")+'">'+(v>0?"получит ":v<0?"должен(на) ":"в расчёте ")+(v?money(v):"")+'</span></div>'}).join(""):'<div class="empty">Нет участников.</div>';
+  $("pays").innerHTML=r.tr.length?r.tr.map(function(t){return '<div class="pay"><b>'+esc(name(t.from))+'</b><span aria-hidden="true">→</span><b>'+esc(name(t.to))+'</b><span class="sum">'+money(t.sum)+'</span></div>'}).join(""):'<div class="empty">Переводы не нужны: все в расчёте.</div>';
+}
+function load(){
+  if(!gid)return Promise.resolve();
+  return rpc("get_group",{gid:gid}).then(function(d){
+    if(!d){net("Группа не найдена. Проверьте ссылку.");return}
+    net("");S=d;render();
+  }).catch(function(){net("Нет связи с сервером. Показаны последние загруженные данные.")});
+}
+function show(app){$("app").hidden=!app;$("start").hidden=app}
+function init(){
+  clearInterval(timer);
+  var m=location.hash.match(/g=([0-9a-f-]{36})/i),last=null;
+  try{last=localStorage.getItem(LS)}catch(e){}
+  gid=m?m[1]:null;
+  if(!gid&&last){gid=last;location.hash="g="+last;return}
+  var ready=URL_.indexOf("YOUR-")<0;
+  $("setup").hidden=ready;$("create").disabled=!ready;
+  if(!gid){show(false);return}
+  try{localStorage.setItem(LS,gid)}catch(e){}
+  show(true);load();timer=setInterval(function(){if(!document.hidden)load()},5000);
+}
+window.addEventListener("hashchange",init);
+$("create").onclick=function(){
+  rpc("new_group").then(function(id){location.hash="g="+id}).catch(function(){$("setup").hidden=false;$("setup").textContent="Не удалось создать группу. Проверьте адрес и ключ Supabase в коде и что setup.sql выполнен."});
+};
+function addPerson(){var n=$("pname").value.trim();if(!n)return;
+  if(S.people.some(function(p){return p.name.toLowerCase()===n.toLowerCase()})){$("pname").select();return}
+  $("pname").value="";act("add_person",{gid:gid,nm:n});$("pname").focus()}
+$("padd").onclick=addPerson;
+$("pname").onkeydown=function(e){if(e.key==="Enter")addPerson()};
+function meta(){act("set_meta",{gid:gid,ttl:$("title").value,cr:$("cur").value})}
+$("title").oninput=function(){clearTimeout(t0);t0=setTimeout(meta,600)};
+$("cur").onchange=function(){S.cur=this.value;render();meta()};
+$("eadd").onclick=function(){
+  var d=$("desc").value.trim(),a=Math.round(parseFloat($("amt").value)*100),
+  ids=Array.prototype.filter.call(document.querySelectorAll("#split input"),function(i){return i.checked}).map(function(i){return i.value}),err="";
+  if(S.people.length<2)err="Сначала добавьте минимум двух участников.";
+  else if(!d)err="Напишите, за что трата.";
+  else if(!(a>0))err="Введите сумму больше нуля.";
+  else if(!ids.length)err="Отметьте, между кем делим.";
+  $("err").textContent=err;if(err)return;
+  $("desc").value="";$("amt").value="";
+  act("add_expense",{gid:gid,ds:d,am:a,py:$("payer").value,sp:ids});$("desc").focus();
+};
+document.addEventListener("click",function(e){
+  var t=e.target,pd=t.getAttribute&&t.getAttribute("data-del-p"),ed=t.getAttribute&&t.getAttribute("data-del-e");
+  if(pd){var used=S.exp.some(function(x){return x.payer===pd||x.split.indexOf(pd)>-1});
+    if(used&&!confirm("Этот участник есть в тратах. Удалить его вместе с этими тратами?"))return;
+    act("del_person",{gid:gid,pid:pd})}
+  if(ed)act("del_expense",{gid:gid,eid:ed});
+});
+function copy(txt,btn,label){
+  function ok(){btn.textContent="Скопировано";setTimeout(function(){btn.textContent=label},1500)}
+  function fb(){var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(e){}document.body.removeChild(ta)}
+  try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(e){fb()}
+}
+$("share").onclick=function(){copy(location.href,this,"Ссылка для друзей")};
+$("copy").onclick=function(){
+  var r=calc(),l=[(S.title||"Общий счёт")+": как рассчитаться"];
+  if(!r.tr.length)l.push("Все в расчёте.");
+  r.tr.forEach(function(t){l.push(name(t.from)+" → "+name(t.to)+": "+money(t.sum))});
+  copy(l.join("\n"),this,"Скопировать итог");
+};
+$("leave").onclick=function(){try{localStorage.removeItem(LS)}catch(e){}clearInterval(timer);gid=null;history.replaceState(null,"",location.pathname);init()};
+init();
+})();
+</script>
+</body>
+</html>
