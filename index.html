@@ -108,7 +108,9 @@ button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-
 <script>
 (function(){
 // === Вставьте сюда данные своего проекта Supabase (Project Settings -> API) ===
-var URL_="https://pkwijjnxdrsliqctvzuh.supabase.co/rest/v1/", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrd2lqam54ZHJzbGlxY3R2enVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMTQ1NTAsImV4cCI6MjExMDU5MDU1MH0.SZwspOMeJk-p939Ve4ZeU2Yli8NptohElyE9cgIOlug".SZwspOMeJk-p939Ve4ZeU2Yli8NptohElyE9cgIOlug;
+var URL_="https://pkwijjnxdrsliqctvzuh.supabase.co", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrd2lqam54ZHJzbGlxY3R2enVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMTQ1NTAsImV4cCI6MjExMDU5MDU1MH0.SZwspOMeJk-p939Ve4ZeU2Yli8NptohElyE9cgIOlug";
+URL_=URL_.replace(/\/rest\/v1\/?$/,"").replace(/\/+$/,"");
+window.onerror=function(m){var d=document.createElement("p");d.style.cssText="color:#b4412f;padding:16px;font:16px sans-serif";d.textContent="Ошибка на странице: "+m;document.body.prepend(d)};
 // ==============================================================================
 var S={title:"",cur:"€",people:[],exp:[]},gid=null,timer=null,t0=null,LS="obschiy-schet-last";
 function $(id){return document.getElementById(id)}
