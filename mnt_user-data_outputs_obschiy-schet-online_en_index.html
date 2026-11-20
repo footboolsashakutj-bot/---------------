@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shared Tab — split expenses with friends</title>
+<meta name="description" content="Free tool for shared expenses: log who paid for what on a trip or in a group and see who owes whom. No sign-up.">
+<meta property="og:title" content="Shared Tab — split expenses with friends">
+<meta property="og:description" content="Free tool for shared expenses: log who paid for what on a trip or in a group and see who owes whom. No sign-up.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#eef3f4;--surface:#fff;--ink:#12343b;--muted:#5d767b;--line:#d5e0e2;--accent:#0f7c8a;--accent-ink:#fff;--coin:#f2b705;--neg:#b4412f;--pos:#13805a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1d21;--surface:#16292e;--ink:#e6f1f2;--muted:#8fa9ae;--line:#264249;--accent:#3fb6c4;--accent-ink:#082126;--neg:#ff8a73;--pos:#59d6a1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1d21;--surface:#16292e;--ink:#e6f1f2;--muted:#8fa9ae;--line:#264249;--accent:#3fb6c4;--accent-ink:#082126;--neg:#ff8a73;--pos:#59d6a1;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Onest,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.1;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+h1 input{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;border-bottom:2px dashed var(--line);width:100%;padding:0 0 4px}
+h1 input:focus{outline:none;border-color:var(--accent)}
+.sub{color:var(--muted);margin:0 0 24px}
+h2{font-size:18px;margin:32px 0 12px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;color:inherit}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grow{flex:1 1 140px}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:none;color:var(--muted);font-weight:500;padding:6px 10px;border:1px solid var(--line)}
+button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-height:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 12px}
+.who{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
+.who label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.exp{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.exp:last-child{border:0}
+.exp small{display:block;color:var(--muted)}
+.amt{font-weight:700;white-space:nowrap}
+.bal{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.bal:last-child{border:0}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.receipt{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--coin);border-radius:4px 4px 14px 14px;padding:8px 16px}
+.pay{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.pay:last-child{border:0}
+.pay b{font-weight:700}.pay .sum{margin-left:auto;font-weight:800;font-size:18px;white-space:nowrap}
+.empty{color:var(--muted);padding:8px 0}
+.foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.err{color:var(--neg);min-height:1.4em;margin:8px 0 0;font-size:14px}
+@media (prefers-reduced-motion:no-preference){button{transition:filter .15s}button:hover{filter:brightness(1.1)}}
+.land{margin-top:24px;border-top:1px solid var(--line);padding-top:8px}.land h3{margin:16px 0 4px;font-size:16px}.land p,.land li{color:var(--muted);margin:0}.land ol{padding-left:20px;margin:0}footer{margin-top:32px;font-size:14px;display:flex;gap:16px;flex-wrap:wrap}footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+<div id="start" class="card" hidden>
+<h1 style="font-size:28px">Shared Tab</h1>
+<p class="sub">Create a group and send the link to your friends: everyone sees and adds expenses in one place.</p>
+<button id="create">Create group</button>
+<div class="land"><h3>How it works</h3><ol><li>Create a group and add the people.</li><li>Log expenses: who paid and for whom.</li><li>Send friends the link: everyone sees the balances and can add expenses.</li></ol><h3>What it’s for</h3><p>Trips, shared rent, parties, group gifts. The app works out who owes whom and reduces it to the fewest transfers. Free, no sign-up.</p></div>
+<p class="err" id="setup" hidden>Connect Supabase first: put your project URL and key at the top of the script.</p>
+</div>
+<div id="app" hidden>
+<h1><input id="title" type="text" maxlength="60" aria-label="Group name" placeholder="Trip or group name"></h1>
+<p class="sub">Log who paid for what. The app shows who owes whom and how much.</p>
+
+<p class="err" id="net" role="status"></p>
+<h2>People</h2>
+<div class="card">
+  <div class="row">
+    <input id="pname" class="grow" type="text" maxlength="30" placeholder="Name" aria-label="Name">
+    <button id="padd">Add</button>
+  </div>
+  <div class="chips" id="people"></div>
+</div>
+
+<h2>New expense</h2>
+<div class="card">
+  <div class="row">
+    <input id="desc" class="grow" type="text" maxlength="60" placeholder="What for (e.g. dinner)" aria-label="Description">
+    <input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount" aria-label="Amount" style="width:110px">
+    <select id="cur" aria-label="Currency"><option>€</option><option>$</option><option>₽</option><option>£</option><option>₴</option><option>₸</option></select>
+  </div>
+  <div class="row" style="margin-top:8px;align-items:center">
+    <label for="payer">Paid by:</label>
+    <select id="payer" class="grow"></select>
+  </div>
+  <p style="margin:12px 0 0">Split equally between:</p>
+  <div class="who" id="split"></div>
+  <button id="eadd">Add expense</button>
+  <p class="err" id="err" role="alert"></p>
+</div>
+
+<h2>Expenses</h2>
+<div class="card" id="exps"></div>
+
+<h2>Balances</h2>
+<div class="card" id="bals"></div>
+
+<h2>How to settle up</h2>
+<div class="receipt" id="pays"></div>
+
+<div class="foot">
+  <button id="share">Invite link</button>
+  <button id="copy" class="ghost">Copy summary</button>
+  <button id="leave" class="ghost">Leave group</button>
+</div>
+<p class="sub" style="margin-top:16px;font-size:14px">Anyone with the link can view and add expenses. Don’t post it publicly.</p>
+</div>
+<footer><a href="../">Русский</a><a href="privacy.html">Privacy</a></footer>
+</main>
+<script>
+(function(){
+// === Вставьте сюда данные своего проекта Supabase (Project Settings -> API) ===
+var URL_="https://pkwijjnxdrsliqctvzuh.supabase.co", KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrd2lqam54ZHJzbGlxY3R2enVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMTQ1NTAsImV4cCI6MjExMDU5MDU1MH0.SZwspOMeJk-p939Ve4ZeU2Yli8NptohElyE9cgIOlug";
+URL_=URL_.replace(/\/rest\/v1\/?$/,"").replace(/\/+$/,"");
+window.onerror=function(m){var d=document.createElement("p");d.style.cssText="color:#b4412f;padding:16px;font:16px sans-serif";d.textContent="Page error: "+m;document.body.prepend(d)};
+// ==============================================================================
+var S={title:"",cur:"€",people:[],exp:[]},gid=null,timer=null,t0=null,LS="obschiy-schet-last";
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function rpc(fn,args){return fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(args||{})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json()})}
+function net(m){$("net").textContent=m||""}
+function act(fn,args){return rpc(fn,args).then(load).catch(function(){net("Couldn’t save. Check your connection and try again.")})}
+function money(c){return (Math.abs(c)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" "+S.cur}
+function name(id){var p=S.people.filter(function(x){return x.id===id})[0];return p?p.name:"—"}
+function calc(){
+  var b={};S.people.forEach(function(p){b[p.id]=0});
+  S.exp.forEach(function(e){
+    var ids=e.split.filter(function(i){return i in b});
+    if(!ids.length||!(e.payer in b))return;
+    var base=Math.floor(e.amt/ids.length),rem=e.amt-base*ids.length;
+    b[e.payer]+=e.amt;ids.forEach(function(i,k){b[i]-=base+(k<rem?1:0)});
+  });
+  var cr=[],db=[],tr=[];
+  Object.keys(b).forEach(function(i){if(b[i]>0)cr.push([i,b[i]]);else if(b[i]<0)db.push([i,-b[i]])});
+  while(cr.length&&db.length){
+    cr.sort(function(a,c){return c[1]-a[1]});db.sort(function(a,c){return c[1]-a[1]});
+    var m=Math.min(cr[0][1],db[0][1]);tr.push({from:db[0][0],to:cr[0][0],sum:m});
+    cr[0][1]-=m;db[0][1]-=m;if(!cr[0][1])cr.shift();if(!db[0][1])db.shift();
+  }
+  return{bal:b,tr:tr};
+}
+function render(){
+  if(document.activeElement!==$("title"))$("title").value=S.title;
+  $("cur").value=S.cur;
+  $("people").innerHTML=S.people.length?S.people.map(function(p){return '<span class="chip">'+esc(p.name)+'<button class="x" data-del-p="'+p.id+'" aria-label="Remove '+esc(p.name)+'">×</button></span>'}).join(""):'<span class="empty">Add at least two people.</span>';
+  var keep=$("payer").value;
+  $("payer").innerHTML=S.people.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>'}).join("");
+  if(keep)$("payer").value=keep;
+  var ck={};Array.prototype.forEach.call(document.querySelectorAll("#split input"),function(i){ck[i.value]=i.checked});
+  $("split").innerHTML=S.people.map(function(p){return '<label><input type="checkbox" value="'+p.id+'"'+((p.id in ck)?(ck[p.id]?" checked":""):" checked")+'>'+esc(p.name)+'</label>'}).join("");
+  $("exps").innerHTML=S.exp.length?S.exp.slice().reverse().map(function(e){return '<div class="exp"><div>'+esc(e.desc)+'<small>paid by '+esc(name(e.payer))+', shared by '+e.split.length+'</small></div><div class="amt">'+money(e.amt)+' <button class="x" data-del-e="'+e.id+'" aria-label="Delete expense">×</button></div></div>'}).join(""):'<div class="empty">No expenses yet.</div>';
+  var r=calc();
+  $("bals").innerHTML=S.people.length?S.people.map(function(p){var v=r.bal[p.id]||0;return '<div class="bal"><span>'+esc(p.name)+'</span><span class="'+(v>0?"pos":v<0?"neg":"")+'">'+(v>0?"gets ":v<0?"owes ":"settled ")+(v?money(v):"")+'</span></div>'}).join(""):'<div class="empty">No people yet.</div>';
+  $("pays").innerHTML=r.tr.length?r.tr.map(function(t){return '<div class="pay"><b>'+esc(name(t.from))+'</b><span aria-hidden="true">→</span><b>'+esc(name(t.to))+'</b><span class="sum">'+money(t.sum)+'</span></div>'}).join(""):'<div class="empty">No transfers needed: everyone is settled.</div>';
+}
+function load(){
+  if(!gid)return Promise.resolve();
+  return rpc("get_group",{gid:gid}).then(function(d){
+    if(!d){net("Group not found. Check the link.");return}
+    net("");S=d;render();
+  }).catch(function(){net("No connection to the server. Showing the last loaded data.")});
+}
+function show(app){$("app").hidden=!app;$("start").hidden=app}
+function init(){
+  clearInterval(timer);
+  var m=location.hash.match(/g=([0-9a-f-]{36})/i),last=null;
+  try{last=localStorage.getItem(LS)}catch(e){}
+  gid=m?m[1]:null;
+  if(!gid&&last){gid=last;location.hash="g="+last;return}
+  var ready=URL_.indexOf("YOUR-")<0;
+  $("setup").hidden=ready;$("create").disabled=!ready;
+  if(!gid){show(false);return}
+  try{localStorage.setItem(LS,gid)}catch(e){}
+  show(true);load();timer=setInterval(function(){if(!document.hidden)load()},5000);
+}
+window.addEventListener("hashchange",init);
+$("create").onclick=function(){
+  rpc("new_group").then(function(id){location.hash="g="+id}).catch(function(){$("setup").hidden=false;$("setup").textContent="Couldn’t create the group. Check the Supabase URL and key and that setup.sql was run."});
+};
+function addPerson(){var n=$("pname").value.trim();if(!n)return;
+  if(S.people.some(function(p){return p.name.toLowerCase()===n.toLowerCase()})){$("pname").select();return}
+  $("pname").value="";act("add_person",{gid:gid,nm:n});$("pname").focus()}
+$("padd").onclick=addPerson;
+$("pname").onkeydown=function(e){if(e.key==="Enter")addPerson()};
+function meta(){act("set_meta",{gid:gid,ttl:$("title").value,cr:$("cur").value})}
+$("title").oninput=function(){clearTimeout(t0);t0=setTimeout(meta,600)};
+$("cur").onchange=function(){S.cur=this.value;render();meta()};
+$("eadd").onclick=function(){
+  var d=$("desc").value.trim(),a=Math.round(parseFloat($("amt").value)*100),
+  ids=Array.prototype.filter.call(document.querySelectorAll("#split input"),function(i){return i.checked}).map(function(i){return i.value}),err="";
+  if(S.people.length<2)err="Add at least two people first.";
+  else if(!d)err="Enter what the expense is for.";
+  else if(!(a>0))err="Enter an amount above zero.";
+  else if(!ids.length)err="Select who shares it.";
+  $("err").textContent=err;if(err)return;
+  $("desc").value="";$("amt").value="";
+  act("add_expense",{gid:gid,ds:d,am:a,py:$("payer").value,sp:ids});$("desc").focus();
+};
+document.addEventListener("click",function(e){
+  var t=e.target,pd=t.getAttribute&&t.getAttribute("data-del-p"),ed=t.getAttribute&&t.getAttribute("data-del-e");
+  if(pd){var used=S.exp.some(function(x){return x.payer===pd||x.split.indexOf(pd)>-1});
+    if(used&&!confirm("This person is in some expenses. Delete them along with those expenses?"))return;
+    act("del_person",{gid:gid,pid:pd})}
+  if(ed)act("del_expense",{gid:gid,eid:ed});
+});
+function copy(txt,btn,label){
+  function ok(){btn.textContent="Copied";setTimeout(function(){btn.textContent=label},1500)}
+  function fb(){var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(e){}document.body.removeChild(ta)}
+  try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(e){fb()}
+}
+$("share").onclick=function(){copy(location.href,this,"Invite link")};
+$("copy").onclick=function(){
+  var r=calc(),l=[(S.title||"Shared Tab")+": how to settle up"];
+  if(!r.tr.length)l.push("Everyone is settled.");
+  r.tr.forEach(function(t){l.push(name(t.from)+" → "+name(t.to)+": "+money(t.sum))});
+  copy(l.join("\n"),this,"Copy summary");
+};
+$("leave").onclick=function(){try{localStorage.removeItem(LS)}catch(e){}clearInterval(timer);gid=null;history.replaceState(null,"",location.pathname);init()};
+init();
+})();
+</script>
+</body>
+</html>

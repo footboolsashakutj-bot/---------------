@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Общий счёт</title>
+<title>Общий счёт — делите расходы с друзьями</title>
+<meta name="description" content="Бесплатный сервис для совместных расходов: записывайте траты в поездке или в компании, и приложение покажет, кто кому сколько должен. Без регистрации.">
+<meta property="og:title" content="Общий счёт — делите расходы с друзьями">
+<meta property="og:description" content="Бесплатный сервис для совместных расходов: записывайте траты в поездке или в компании, и приложение покажет, кто кому сколько должен. Без регистрации.">
+<meta property="og:type" content="website">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap">
 <style>
 :root{--bg:#eef3f4;--surface:#fff;--ink:#12343b;--muted:#5d767b;--line:#d5e0e2;--accent:#0f7c8a;--accent-ink:#fff;--coin:#f2b705;--neg:#b4412f;--pos:#13805a;
@@ -47,6 +51,7 @@ button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-
 .foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .err{color:var(--neg);min-height:1.4em;margin:8px 0 0;font-size:14px}
 @media (prefers-reduced-motion:no-preference){button{transition:filter .15s}button:hover{filter:brightness(1.1)}}
+.land{margin-top:24px;border-top:1px solid var(--line);padding-top:8px}.land h3{margin:16px 0 4px;font-size:16px}.land p,.land li{color:var(--muted);margin:0}.land ol{padding-left:20px;margin:0}footer{margin-top:32px;font-size:14px;display:flex;gap:16px;flex-wrap:wrap}footer a{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -55,6 +60,7 @@ button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-
 <h1 style="font-size:28px">Общий счёт</h1>
 <p class="sub">Создайте группу и отправьте ссылку друзьям: все видят и добавляют траты в одном месте.</p>
 <button id="create">Создать группу</button>
+<div class="land"><h3>Как это работает</h3><ol><li>Создайте группу и добавьте участников.</li><li>Записывайте траты: кто платил и за кого.</li><li>Отправьте друзьям ссылку: все видят общий баланс и добавляют траты.</li></ol><h3>Для чего</h3><p>Поездки, совместная аренда, вечеринки, общие подарки. Сервис считает, кто кому должен, и сводит всё к минимуму переводов. Бесплатно и без регистрации.</p></div>
 <p class="err" id="setup" hidden>Сначала подключите Supabase: вставьте адрес проекта и ключ в начале скрипта (см. инструкцию).</p>
 </div>
 <div id="app" hidden>
@@ -104,6 +110,7 @@ button.x{background:none;color:var(--muted);padding:2px 8px;font-size:18px;line-
 </div>
 <p class="sub" style="margin-top:16px;font-size:14px">Любой, у кого есть ссылка, может смотреть и добавлять траты. Не публикуйте её открыто.</p>
 </div>
+<footer><a href="en/">English</a><a href="privacy.html">Конфиденциальность</a></footer>
 </main>
 <script>
 (function(){
